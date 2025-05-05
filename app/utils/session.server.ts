@@ -1,7 +1,7 @@
 // app/utils/session.server.ts
 import { createCookieSessionStorage, redirect } from '@remix-run/node';
-import { createApiClient, handleApiError } from './api.server';
-import type { User } from '~/types';
+import { createApiClient } from './api.server';
+import type { User, RegisterRequest } from '~/types';
 
 // Define session storage
 const sessionStorage = createCookieSessionStorage({
@@ -63,7 +63,23 @@ export async function login(email: string, password: string) {
       user: response.data.data
     };
   } catch (error) {
-    handleApiError(error);
+    // Handle API errors
+    throw new Error('Invalid credentials');
+  }
+}
+
+// Register user
+export async function registerUser(userData: RegisterRequest): Promise<User> {
+  try {
+    const api = createApiClient();
+    const response = await api.post('/users/sign_up', {
+      user: userData
+    });
+
+    return response.data.data;
+  } catch (error) {
+    // Handle API errors
+    throw new Error('Registration failed');
   }
 }
 
@@ -92,7 +108,6 @@ export async function logout(request: Request) {
       const api = createApiClient(token);
       await api.delete('/users/sign_out');
     } catch (error) {
-      console.error('Error during API logout:', error);
       // Continue with logout process even if API call fails
     }
   }
@@ -102,19 +117,4 @@ export async function logout(request: Request) {
       'Set-Cookie': await sessionStorage.destroySession(session),
     },
   });
-}
-
-// Require auth
-export async function requireUser(
-  request: Request,
-  redirectTo: string = new URL(request.url).pathname
-) {
-  const user = await getUser(request);
-
-  if (!user) {
-    const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
-  }
-
-  return user;
 }
