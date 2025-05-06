@@ -1,4 +1,6 @@
+import { Form, useActionData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
+import { ActionFunctionArgs, json } from '@remix-run/node';
 import {
   TextInput,
   PasswordInput,
@@ -15,13 +17,35 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconLock, IconAt, IconUser, IconId, IconBuildingSkyscraper } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom';
+
+import { IconLock, IconAt, IconUser, IconId } from '@tabler/icons-react';
+import { login, createUserSession } from '~/utils/session.server';
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+    return json({ error: 'Invalid form submission' }, { status: 400 });
+  }
+
+  try {
+    const { token, user } = await login(email, password);
+    return createUserSession(token, '/dashboard');
+  } catch (error) {
+    console.log('error', error)
+    return json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+}
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<string | null>('login');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const actionData = useActionData<typeof action>();
+
+  // Check if we're in a submitting state
+  const isLoading = navigation.state === "submitting";
 
   // Login form
   const loginForm = useForm({
@@ -57,65 +81,7 @@ export default function LoginPage() {
     },
   });
 
-  const handleLoginSubmit = async (values: typeof loginForm.values) => {
-    setIsLoading(true);
-    try {
-      // This would be replaced with actual API call
-      console.log('Login values:', values);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Success notification
-      notifications.show({
-        title: 'Login successful',
-        message: 'Welcome to ASIA.ai platform',
-        color: 'green',
-      });
-
-      // Navigate to dashboard
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      notifications.show({
-        title: 'Login failed',
-        message: 'Please check your credentials and try again',
-        color: 'red',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegisterSubmit = async (values: typeof registerForm.values) => {
-    setIsLoading(true);
-    try {
-      // This would be replaced with actual API call
-      console.log('Register values:', values);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Success notification
-      notifications.show({
-        title: 'Registration successful',
-        message: 'Your account has been created. You can now log in.',
-        color: 'green',
-      });
-
-      // Switch to login tab
-      setActiveTab('login');
-    } catch (error) {
-      console.error('Registration error:', error);
-      notifications.show({
-        title: 'Registration failed',
-        message: 'Please check your information and try again',
-        color: 'red',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  console.log('action data', actionData);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -141,9 +107,18 @@ export default function LoginPage() {
             </Tabs.List>
 
             <Tabs.Panel value="login">
-              <form onSubmit={loginForm.onSubmit(handleLoginSubmit)}>
+              <Form method="post">
+                <input type="hidden" name="loginType" value="login" />
+
+                {actionData?.error && (
+                  <div className="mb-4 p-3 bg-red-50 text-red-600 rounded border border-red-200">
+                    {actionData.error}
+                  </div>
+                )}
+
                 <TextInput
                   required
+                  name="email"
                   label="Email"
                   placeholder="you@example.com"
                   leftSection={<IconAt size={16} />}
@@ -153,6 +128,7 @@ export default function LoginPage() {
 
                 <PasswordInput
                   required
+                  name="password"
                   label="Password"
                   placeholder="Your password"
                   leftSection={<IconLock size={16} />}
@@ -174,14 +150,16 @@ export default function LoginPage() {
                 >
                   Sign in
                 </Button>
-              </form>
+              </Form>
             </Tabs.Panel>
 
             <Tabs.Panel value="register">
-              <form onSubmit={registerForm.onSubmit(handleRegisterSubmit)}>
+              <Form method="post">
+                <input type="hidden" name="loginType" value="register" />
                 <div className="grid grid-cols-2 gap-4">
                   <TextInput
                     required
+                    name="email"
                     label="First name"
                     placeholder="John"
                     leftSection={<IconUser size={16} />}
@@ -242,7 +220,7 @@ export default function LoginPage() {
                 >
                   Create account
                 </Button>
-              </form>
+              </Form>
             </Tabs.Panel>
           </Tabs>
 
