@@ -19,7 +19,7 @@ import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 
 import { IconLock, IconAt, IconUser, IconId } from '@tabler/icons-react';
-import { login, createUserSession } from '~/utils/session.server';
+import { login, createUserSession, registerUser } from '~/utils/session.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -31,8 +31,23 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const { token, user } = await login(email, password);
-    return createUserSession(token, '/dashboard');
+    if (formData.get('loginType') === 'login') {
+      const {token, user} = await login(email, password);
+      return createUserSession(token, '/');
+    }
+    if (formData.get('loginType') === 'register') {
+      const firstName = formData.get('firstName');
+      const lastName = formData.get('lastName');
+      const agentId = formData.get('agentId');
+      const firmId = formData.get('firmId');
+
+      if (!firstName || !lastName || !agentId || !firmId) {
+        return json({ error: 'Invalid form submission' }, { status: 400 });
+      }
+
+      return registerUser({ first_name: firstName, last_name: lastName, email, password, password_confirmation: password, agent_id: agentId, role: 'agent', firm_id: parseInt(firmId) });
+
+    }
   } catch (error) {
     console.log('error', error)
     return json({ error: 'Invalid credentials' }, { status: 401 });
