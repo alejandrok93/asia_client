@@ -39,6 +39,7 @@ export default function Index() {
   // Function to create a new conversation
   const createNewConversation = () => {
     const newChatId = generateChatId();
+    console.log('new chat!')
     setActiveChatId(newChatId);
     setIsNewChat(true);
     // In a real application, you would make an API call here to create a new chat
@@ -51,6 +52,7 @@ export default function Index() {
         <Sidebar
           user={user}
           activeChatId={activeChatId}
+          onNewChat={createNewConversation}
           onSelectChat={(chatId) => {
             setActiveChatId(chatId);
             setIsNewChat(false);

@@ -31,6 +31,16 @@ export interface Conversation {
   updated_at: string;
   user_id: number;
   firm_id: number;
+  messages: Message[];
+}
+
+export interface Message {
+  id: number;
+  role: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  conversation_id: number;
 }
 
 export interface ApiResponse<T> {

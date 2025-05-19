@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Divider, NavLink, Text, Stack, Box, Group } from '@mantine/core';
-import { IconPlus, IconMessageCircle } from '@tabler/icons-react';
+import { IconPlus, IconMessageCircle, IconLogout } from '@tabler/icons-react';
 
 type Conversation = {
   id: string;
@@ -16,6 +16,7 @@ interface SidebarProps {
   user?: any;
   activeChatId?: string | null;
   onSelectChat?: (chatId: string) => void;
+  onLogout?: () => void;
 }
 
 const Sidebar = ({
@@ -25,7 +26,8 @@ const Sidebar = ({
   onConversationClick,
   user,
   activeChatId,
-  onSelectChat
+  onSelectChat,
+  onLogout
 }: SidebarProps) => {
   // Use either activeChatId or activeConversationId based on what's provided
   const activeId = activeChatId || activeConversationId;
@@ -89,6 +91,20 @@ const Sidebar = ({
             </Text>
           )}
         </Group>
+        
+        {user && (
+          <Button
+            variant="subtle"
+            color="gray"
+            leftSection={<IconLogout size={16} />}
+            onClick={onLogout}
+            fullWidth
+            size="sm"
+            mt="xs"
+          >
+            Logout
+          </Button>
+        )}
       </Stack>
     </Box>
   );
