@@ -1,11 +1,14 @@
-import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import { getUser, getUserSession } from "~/utils/session.server";
 import Sidebar from "~/components/layout/Sidebar";
 import ChatContainer from "~/components/chat/ChatContainer";
 import EmptyState from "~/components/EmptyState";
 import { useState } from "react";
+import type { Conversation } from "~/types";
+// Import server modules only in the server-side loader and action functions
+import { createConversation, getConversations } from "~/models/conversation.server";
 
 // Loader function to check authentication
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -18,7 +21,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect("/login");
   }
 
-  return json({ user: session });
+  // Fetch the user's conversations
+  const conversations = await getConversations(session.token);
+
+  return json({ user: session, conversations });
+}
+
+// Action function to handle conversation creation
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await getUserSession(request);
+
+  if (!session) {
+    return json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const title = formData.get("title") as string || "New Conversation";
+
+  try {
+    const newConversation = await createConversation(session.token, { title });
+    // Redirect to the same page, which will trigger the loader to get fresh data
+    // Include the new conversation ID as a URL parameter to activate it
+    return redirect(`/chat/${newConversation.id}`);
+  } catch (error) {
+    console.error("Error creating conversation:", error);
+    return json({ error: "Failed to create conversation" }, { status: 500 });
+  }
 }
 
 export const meta: MetaFunction = () => {
@@ -28,22 +56,18 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Function to generate a unique chat ID
-const generateChatId = () => `new_chat_${Date.now()}`;
-
 export default function Index() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, conversations } = useLoaderData<typeof loader>();
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isNewChat, setIsNewChat] = useState(false);
+  const fetcher = useFetcher<typeof action>();
 
-  // Function to create a new conversation
+  // Create a new conversation using the action
   const createNewConversation = () => {
-    const newChatId = generateChatId();
-    console.log('new chat!')
-    setActiveChatId(newChatId);
-    setIsNewChat(true);
-    // In a real application, you would make an API call here to create a new chat
-    console.log("Creating new conversation with ID:", newChatId);
+    const formData = new FormData();
+    formData.append("title", "New Conversation");
+
+    fetcher.submit(formData, { method: "post" });
   };
 
   return (
@@ -54,9 +78,14 @@ export default function Index() {
           activeChatId={activeChatId}
           onNewChat={createNewConversation}
           onSelectChat={(chatId) => {
-            setActiveChatId(chatId);
-            setIsNewChat(false);
+            // Navigate to the chat page when selecting a chat
+            window.location.href = `/chat/${chatId}`;
           }}
+          conversations={conversations.map(conv => ({
+            id: String(conv.id),
+            title: conv.title,
+            date: new Date(conv.created_at)
+          }))}
         />
       </div>
 

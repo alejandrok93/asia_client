@@ -25,7 +25,6 @@ export interface Conversation {
   id: number;
   title: string;
   status: 'active' | 'archived';
-  ai_context: string;
   last_interaction_at: string;
   created_at: string;
   updated_at: string;

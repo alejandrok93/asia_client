@@ -24,7 +24,7 @@ export async function getConversation(token: string, id: number): Promise<Conver
 
 export async function createConversation(
   token: string,
-  data: Pick<Conversation, 'title' | 'ai_context'>
+  data: Pick<Conversation, 'title'>
 ): Promise<Conversation> {
   try {
     const api = createApiClient(token);
