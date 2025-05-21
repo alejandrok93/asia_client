@@ -2,7 +2,8 @@
 import axios from 'axios';
 import { json } from '@remix-run/node';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000/api/v1';
+// Use a direct string here for server-side code to avoid process.env issues
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 export const createApiClient = (token?: string) => {
   const client = axios.create({
@@ -24,6 +25,8 @@ export const createApiClient = (token?: string) => {
       return Promise.reject(error);
     }
   );
+
+  console.log('api client', client)
 
   return client;
 };

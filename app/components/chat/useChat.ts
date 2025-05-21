@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createConsumer } from "@rails/actioncable";
+import { ENV } from "~/utils/env";
 
 import { Message } from "~/types/index";
 
@@ -7,7 +8,7 @@ export function useChat(conversationId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    const cable = createConsumer(process.env.ACTION_CABLE_URL);
+    const cable = createConsumer(ENV.ACTION_CABLE_URL);
     const sub = cable.subscriptions.create(
       { channel: "ConversationChannel", conversation_id: conversationId },
       {

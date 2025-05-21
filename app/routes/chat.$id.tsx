@@ -1,7 +1,7 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useParams } from "@remix-run/react";
-import { getUserSession } from "~/utils/session.server";
+import { getUserSession, getUserToken } from "~/utils/session.server";
 import Sidebar from "~/components/layout/Sidebar";
 import ChatContainer from "~/components/chat/ChatContainer";
 import { getConversations, getConversation } from "~/models/conversation.server";
@@ -9,20 +9,21 @@ import type { Conversation } from "~/types";
 
 // Loader function to check authentication and get chat data
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const chatId = params.id;
+  console.log('params ', params)
+  const { id } = params;
 
-  // Get user session
-  const session = await getUserSession(request);
+  const session = await getUserSession(request)
+  const token = await getUserToken(request);
 
-  if (!session) {
+  if (!token) {
     return redirect("/login");
   }
 
   try {
     // Fetch the specific conversation
-    const conversation = await getConversation(session.token, Number(chatId));
+    const conversation = await getConversation(token, Number(id));
     // Fetch all conversations for the sidebar
-    const conversations = await getConversations(session.token);
+    const conversations = await getConversations(token);
 
     return json({ user: session, conversation, conversations });
   } catch (error) {
@@ -62,10 +63,10 @@ export default function ChatConversation() {
       <Sidebar
         user={user}
         activeChatId={chatId}
-        conversations={conversations.map(c => ({ 
-          id: String(c.id), 
-          title: c.title, 
-          date: new Date(c.created_at) 
+        conversations={conversations.map(c => ({
+          id: String(c.id),
+          title: c.title,
+          date: new Date(c.created_at)
         }))}
         onNewChat={() => window.location.href = "/"}
         onSelectChat={(id) => window.location.href = `/chat/${id}`}

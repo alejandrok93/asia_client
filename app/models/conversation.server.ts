@@ -4,7 +4,10 @@ import type { Conversation } from '~/types';
 
 export async function getConversations(token: string): Promise<Conversation[]> {
   try {
+    console.log('getConversations()')
+    console.log('token', token)
     const api = createApiClient(token);
+    console.log(api)
     const response = await api.get('/conversations');
     return response.data.data;
   } catch (error) {

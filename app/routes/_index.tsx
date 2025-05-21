@@ -1,7 +1,7 @@
 import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-import { getUser, getUserSession } from "~/utils/session.server";
+import { getUser, getUserSession, getUserToken } from "~/utils/session.server";
 import Sidebar from "~/components/layout/Sidebar";
 import ChatContainer from "~/components/chat/ChatContainer";
 import EmptyState from "~/components/EmptyState";
@@ -12,26 +12,27 @@ import { createConversation, getConversations } from "~/models/conversation.serv
 
 // Loader function to check authentication
 export async function loader({ request }: LoaderFunctionArgs) {
-  console.log('index')
-  const session = await getUserSession(request);
-  console.log('user', session);
+  console.log('index PAGE LOADER');
+  const session = await getUserSession(request)
+  const token = await getUserToken(request);
+  console.log('session token', token)
 
   // If no user is found, redirect to login page
-  if (!session) {
+  if (!token) {
     return redirect("/login");
   }
 
   // Fetch the user's conversations
-  const conversations = await getConversations(session.token);
+  const conversations = await getConversations(token);
 
   return json({ user: session, conversations });
 }
 
 // Action function to handle conversation creation
 export async function action({ request }: ActionFunctionArgs) {
-  const session = await getUserSession(request);
+  const token = await getUserToken(request);
 
-  if (!session) {
+  if (!token) {
     return json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -39,7 +40,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const title = formData.get("title") as string || "New Conversation";
 
   try {
-    const newConversation = await createConversation(session.token, { title });
+    const newConversation = await createConversation(token, { title });
+    console.log('newConversation', newConversation)
     // Redirect to the same page, which will trigger the loader to get fresh data
     // Include the new conversation ID as a URL parameter to activate it
     return redirect(`/chat/${newConversation.id}`);
