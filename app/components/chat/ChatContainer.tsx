@@ -13,7 +13,7 @@ interface ChatContainerProps {
 }
 
 const ChatContainer = ({ initialMessages = [], chatId, user }: ChatContainerProps) => {
-  const { messages, send } = useChat(chatId)
+  const { messages, send } = useChat(chatId || '', initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const routeParams = useParams();
@@ -36,18 +36,8 @@ const ChatContainer = ({ initialMessages = [], chatId, user }: ChatContainerProp
     }
   };
 
-  // Welcome message when no messages exist
-  useEffect(() => {
-    if (messages.length === 0) {
-      const welcomeMessage: Message = {
-        id: 'welcome',
-        role: 'assistant',
-        content: "👋 Hello! I'm your ASIA.ai assistant, designed to help you with your tasks. You can ask me about:\n\n• General information\n• Creating content\n• Analysis and recommendations\n• Strategic advice\n• Data interpretation\n\nHow can I help you today?",
-        timestamp: new Date(),
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [messages.length]);
+
+  console.log('messages', messages)
 
   return (
     <Flex direction="column" h="100%" style={{ width: '100%', maxWidth: '100%' }}>

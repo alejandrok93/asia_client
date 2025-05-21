@@ -39,10 +39,6 @@ export function handleApiError(error: unknown) {
     const status = error.response?.status || 500;
     const message = error.response?.data?.error || 'An unexpected error occurred';
 
-    if (status === 401) {
-      throw json({ message: 'Your session has expired. Please log in again.' }, { status: 401 });
-    }
-
     throw json({ message }, { status });
   }
 

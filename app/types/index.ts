@@ -21,25 +21,49 @@ export interface Firm {
   updated_at: string;
 }
 
+// JSON:API format for Conversation
 export interface Conversation {
-  id: number;
-  title: string;
-  status: 'active' | 'archived';
-  last_interaction_at: string;
-  created_at: string;
-  updated_at: string;
-  user_id: number;
-  firm_id: number;
-  messages: Message[];
+  id: string;
+  type: string;
+  attributes: {
+    id: number;
+    title: string;
+    status: 'active' | 'archived';
+    last_interaction_at: string;
+    created_at: string;
+    updated_at: string;
+  };
+  relationships: {
+    user: {
+      data: {
+        id: string;
+        type: string;
+      }
+    };
+    firm: {
+      data: {
+        id: string;
+        type: string;
+      }
+    };
+    messages: {
+      data: Array<{
+        id: string;
+        content: string;
+        type: string;
+      }> | [];
+    };
+  };
 }
 
 export interface Message {
-  id: number;
+  id: number | string;
   role: string;
   content: string;
-  created_at: string;
-  updated_at: string;
-  conversation_id: number;
+  timestamp?: Date;
+  created_at?: string;
+  updated_at?: string;
+  conversation_id?: number;
 }
 
 export interface ApiResponse<T> {

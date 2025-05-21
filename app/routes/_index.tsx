@@ -72,6 +72,8 @@ export default function Index() {
     fetcher.submit(formData, { method: "post" });
   };
 
+  console.log('conversations', conversations)
+
   return (
     <div className="flex flex-row w-full h-screen bg-gray-50 overflow-hidden">
       <div className="flex-shrink-0">
@@ -85,8 +87,8 @@ export default function Index() {
           }}
           conversations={conversations.map(conv => ({
             id: String(conv.id),
-            title: conv.title,
-            date: new Date(conv.created_at)
+            title: conv.attributes.title,
+            date: new Date(conv.attributes.created_at)
           }))}
         />
       </div>

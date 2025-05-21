@@ -1,11 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createConsumer } from "@rails/actioncable";
 import { ENV } from "~/utils/env";
+import { useFetcher } from "@remix-run/react";
 
 import { Message } from "~/types/index";
 
-export function useChat(conversationId: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export function useChat(conversationId: string, initialMessages: Message[] = []) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const fetcher = useFetcher();
+
+  // Reset messages when conversation ID changes or initialMessages change
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [conversationId]);
 
   useEffect(() => {
     const cable = createConsumer(ENV.ACTION_CABLE_URL);
@@ -23,6 +31,9 @@ export function useChat(conversationId: string) {
             );
           } else if (data.type === "assistant_complete") {
             // Optionally scroll, mark as done, etc.
+          } else if (data.type === "message_created") {
+            // Add new message to the list
+            setMessages(prev => [...prev, data.message]);
           }
         }
       }
@@ -31,12 +42,26 @@ export function useChat(conversationId: string) {
   }, [conversationId]);
 
   async function send(content: string) {
-    await fetch(`/conversations/${conversationId}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content })
+    // Create a temporary user message to show immediately in the UI
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      role: 'user',
+      content,
+      timestamp: new Date()
+    };
+
+    // Add the message to local state right away
+    setMessages(prev => [...prev, tempMessage]);
+
+    // Use Remix fetcher to submit to the action
+    const formData = new FormData();
+    formData.append("content", content);
+
+    fetcher.submit(formData, {
+      method: "post",
+      action: `/chat/${conversationId}`
     });
   }
 
-  return { messages, send };
+  return { messages, send, isLoading };
 }

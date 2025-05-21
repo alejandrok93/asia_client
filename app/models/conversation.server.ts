@@ -60,3 +60,19 @@ export async function deleteConversation(token: string, id: number): Promise<voi
     handleApiError(error);
   }
 }
+
+export async function sendMessage(
+  token: string,
+  conversationId: number,
+  message: string
+): Promise<void> {
+  try {
+    console.log('token', token)
+    console.log('sendMessage()')
+    console.log('conversationId', conversationId)
+    const api = createApiClient(token);
+    await api.post(`/conversations/${conversationId}/messages`, { message });
+  } catch (error) {
+    handleApiError(error);
+  }
+}

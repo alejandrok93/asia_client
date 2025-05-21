@@ -1,10 +1,10 @@
-import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { MetaFunction, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useParams } from "@remix-run/react";
 import { getUserSession, getUserToken } from "~/utils/session.server";
 import Sidebar from "~/components/layout/Sidebar";
 import ChatContainer from "~/components/chat/ChatContainer";
-import { getConversations, getConversation } from "~/models/conversation.server";
+import { getConversations, getConversation, sendMessage } from "~/models/conversation.server";
 import type { Conversation } from "~/types";
 
 // Loader function to check authentication and get chat data
@@ -41,20 +41,35 @@ export const meta: MetaFunction = ({ data }) => {
   ];
 };
 
-export const action = async ({ request, params }: LoaderFunctionArgs) => {
+// Add action function to handle message sending
+export async function action({ request, params }: ActionFunctionArgs) {
+  const token = await getUserToken(request);
+  const { id } = params;
+
+  if (!token || !id) {
+    return json({ error: "Unauthorized or missing chat ID" }, { status: 401 });
+  }
+
   const formData = await request.formData();
-  const content = formData.get("message")?.toString() || "";
-  const chatId = params.id;
+  const content = formData.get("content") as string;
 
-  // In a real app, you would save the new message to your database
-  console.log(`New message in chat ${chatId}: ${content}`);
+  if (!content) {
+    return json({ error: "Message content is required" }, { status: 400 });
+  }
 
-  // Return success response
-  return json({ success: true });
-};
+  try {
+    await sendMessage(token, Number(id), content);
+    return json({ success: true });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return json({ error: "Failed to send message" }, { status: 500 });
+  }
+}
 
 export default function ChatConversation() {
   const { user, conversation, conversations } = useLoaderData<typeof loader>();
+  console.log('conversations', conversations);
+  console.log('conversation ', conversation)
   const params = useParams();
   const chatId = params.id;
 
@@ -65,8 +80,8 @@ export default function ChatConversation() {
         activeChatId={chatId}
         conversations={conversations.map(c => ({
           id: String(c.id),
-          title: c.title,
-          date: new Date(c.created_at)
+          title: c.attributes.title,
+          date: new Date(c.attributes.created_at)
         }))}
         onNewChat={() => window.location.href = "/"}
         onSelectChat={(id) => window.location.href = `/chat/${id}`}
@@ -76,7 +91,7 @@ export default function ChatConversation() {
         <ChatContainer
           chatId={chatId}
           user={user}
-          initialMessages={conversation?.messages || []}
+          initialMessages={conversation?.relationships?.messages?.data || []}
         />
       </main>
     </div>

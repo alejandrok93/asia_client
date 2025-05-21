@@ -46,7 +46,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
             </Text>
 
             <Box>
-              {message.content.split('\n').map((paragraph, i) => (
+              {message?.content?.split('\n').map((paragraph, i) => (
                 <Text key={i} mb={paragraph.length > 0 ? 'xs' : 0}>
                   {paragraph}
                 </Text>

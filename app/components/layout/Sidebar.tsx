@@ -33,6 +33,7 @@ const Sidebar = ({
   const activeId = activeChatId || activeConversationId;
   // Use either onSelectChat or onConversationClick based on what's provided
   const handleChatSelect = onSelectChat || onConversationClick;
+  console.log('conversations', conversations);
 
   return (
     <Box
@@ -91,7 +92,7 @@ const Sidebar = ({
             </Text>
           )}
         </Group>
-        
+
         {user && (
           <Button
             variant="subtle"
