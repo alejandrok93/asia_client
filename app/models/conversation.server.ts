@@ -15,10 +15,11 @@ export async function getConversations(token: string): Promise<Conversation[]> {
   }
 }
 
-export async function getConversation(token: string, id: number): Promise<Conversation> {
+export async function getConversation(token: string, id: string | number): Promise<Conversation> {
   try {
+    const formattedId = Number(id);
     const api = createApiClient(token);
-    const response = await api.get(`/conversations/${id}`);
+    const response = await api.get(`/conversations/${formattedId}`);
     return response.data.data;
   } catch (error) {
     handleApiError(error);

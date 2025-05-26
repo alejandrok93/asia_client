@@ -6,6 +6,7 @@ import Sidebar from "~/components/layout/Sidebar";
 import ChatContainer from "~/components/chat/ChatContainer";
 import { getConversations, getConversation, sendMessage } from "~/models/conversation.server";
 import type { Conversation } from "~/types";
+import { Flex, Box } from "@mantine/core";
 
 // Loader function to check authentication and get chat data
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -20,8 +21,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   try {
-    // Fetch the specific conversation
-    const conversation = await getConversation(token, Number(id));
+    const conversation = await getConversation(token, id);
     // Fetch all conversations for the sidebar
     const conversations = await getConversations(token);
 
@@ -41,7 +41,6 @@ export const meta: MetaFunction = ({ data }) => {
   ];
 };
 
-// Add action function to handle message sending
 export async function action({ request, params }: ActionFunctionArgs) {
   const token = await getUserToken(request);
   const { id } = params;
@@ -74,7 +73,7 @@ export default function ChatConversation() {
   const chatId = params.id;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <Flex h="100vh" bg="gray.1">
       <Sidebar
         user={user}
         activeChatId={chatId}
@@ -87,13 +86,21 @@ export default function ChatConversation() {
         onSelectChat={(id) => window.location.href = `/chat/${id}`}
       />
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <Box
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          minWidth: 0
+        }}
+      >
         <ChatContainer
           chatId={chatId}
           user={user}
           initialMessages={conversation?.relationships?.messages?.data || []}
         />
-      </main>
-    </div>
+      </Box>
+    </Flex>
   );
 }

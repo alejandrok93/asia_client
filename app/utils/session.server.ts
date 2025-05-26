@@ -24,6 +24,22 @@ export async function getUserSession(request: Request) {
 export async function getUserToken(request: Request) {
   const session = await getUserSession(request);
   const token = session.get('token');
+
+  if (!token) return null;
+
+  // Check if token is expired
+  try {
+    // Decode JWT payload (without verification since we just need to check expiration)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    if (payload.exp && payload.exp < currentTime) {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+
   return token;
 }
 

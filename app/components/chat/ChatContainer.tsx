@@ -18,6 +18,7 @@ const ChatContainer = ({ initialMessages = [], chatId, user }: ChatContainerProp
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const routeParams = useParams();
   const activeChatId = chatId || routeParams.id;
+  console.log('initialmessages', initialMessages)
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -40,8 +41,8 @@ const ChatContainer = ({ initialMessages = [], chatId, user }: ChatContainerProp
   console.log('messages', messages)
 
   return (
-    <Flex direction="column" h="100%" style={{ width: '100%', maxWidth: '100%' }}>
-      <Box sx={{ flex: 1, overflowY: 'auto', width: '100%' }}>
+    <Flex direction="column" h="100%" bg="white" style={{ width: '100%', maxWidth: '100%', minHeight: 0 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', width: '100%', padding: '1rem 0' }}>
         {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
         ))}

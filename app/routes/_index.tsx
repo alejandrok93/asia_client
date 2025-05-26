@@ -7,6 +7,7 @@ import ChatContainer from "~/components/chat/ChatContainer";
 import EmptyState from "~/components/EmptyState";
 import { useState } from "react";
 import type { Conversation } from "~/types";
+import { Flex, Box } from "@mantine/core";
 // Import server modules only in the server-side loader and action functions
 import { createConversation, getConversations } from "~/models/conversation.server";
 
@@ -75,25 +76,31 @@ export default function Index() {
   console.log('conversations', conversations)
 
   return (
-    <div className="flex flex-row w-full h-screen bg-gray-50 overflow-hidden">
-      <div className="flex-shrink-0">
-        <Sidebar
-          user={user}
-          activeChatId={activeChatId}
-          onNewChat={createNewConversation}
-          onSelectChat={(chatId) => {
-            // Navigate to the chat page when selecting a chat
-            window.location.href = `/chat/${chatId}`;
-          }}
-          conversations={conversations.map(conv => ({
-            id: String(conv.id),
-            title: conv.attributes.title,
-            date: new Date(conv.attributes.created_at)
-          }))}
-        />
-      </div>
+    <Flex h="100vh" bg="gray.1">
+      <Sidebar
+        user={user}
+        activeChatId={activeChatId}
+        onNewChat={createNewConversation}
+        onSelectChat={(chatId) => {
+          // Navigate to the chat page when selecting a chat
+          window.location.href = `/chat/${chatId}`;
+        }}
+        conversations={conversations.map(conv => ({
+          id: String(conv.id),
+          title: conv.attributes.title,
+          date: new Date(conv.attributes.created_at)
+        }))}
+      />
 
-      <main className="flex-grow overflow-auto">
+      <Box
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          minWidth: 0
+        }}
+      >
         {activeChatId ? (
           <ChatContainer chatId={activeChatId} user={user} initialMessages={isNewChat ? [] : undefined} />
         ) : (
@@ -105,7 +112,7 @@ export default function Index() {
             onAction={createNewConversation}
           />
         )}
-      </main>
-    </div>
+      </Box>
+    </Flex>
   );
 }

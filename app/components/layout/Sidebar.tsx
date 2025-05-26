@@ -44,7 +44,8 @@ const Sidebar = ({
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        height: '100%'
+        height: '100vh',
+        flexShrink: 0
       }}
     >
       <Stack spacing="xs" p="md" h="100%" style={{ flex: 1 }}>

@@ -16,6 +16,7 @@ export function useChat(conversationId: string, initialMessages: Message[] = [])
   }, [conversationId]);
 
   useEffect(() => {
+    console.log('create action cable consumer!')
     const cable = createConsumer(ENV.ACTION_CABLE_URL);
     const sub = cable.subscriptions.create(
       { channel: "ConversationChannel", conversation_id: conversationId },
@@ -38,6 +39,8 @@ export function useChat(conversationId: string, initialMessages: Message[] = [])
         }
       }
     );
+
+    console.log(sub)
     return () => sub.unsubscribe();
   }, [conversationId]);
 
