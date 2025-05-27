@@ -20,6 +20,8 @@ export async function getConversation(token: string, id: string | number): Promi
     const formattedId = Number(id);
     const api = createApiClient(token);
     const response = await api.get(`/conversations/${formattedId}`);
+    console.log("getConversation()")
+    console.log(response.data.data)
     return response.data.data;
   } catch (error) {
     handleApiError(error);

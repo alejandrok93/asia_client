@@ -13,6 +13,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   console.log('params ', params)
   const { id } = params;
 
+  // Reject non-numeric IDs (like .js.map files)
+  if (!id || !/^\d+$/.test(id)) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
   const session = await getUserSession(request)
   const token = await getUserToken(request);
 
