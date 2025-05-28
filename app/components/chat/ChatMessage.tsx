@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import React from 'react';
 import { Avatar, Paper, Text, Group, Stack, Box, Flex } from '@mantine/core';
 
@@ -81,37 +82,38 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
                 {/* Message content */}
                 <Box>
                   {message?.content?.split('\n').map((paragraph, i) => (
-                    <Text 
-                      key={i} 
-                      size="sm"
-                      c={isUser ? 'white' : 'dark'}
-                      mb={paragraph.length > 0 ? 'xs' : 0}
-                      style={{ lineHeight: 1.5 }}
-                    >
-                      {paragraph}
-                    </Text>
+                    <div
+                      key={i}
+                      dangerouslySetInnerHTML={{__html: marked(paragraph)}}
+                      style={{
+                        fontSize: '14px',
+                        color: isUser ? '#a5b4fc' : '#868e96',
+                        textAlign: isUser ? 'right' : 'left',
+                        marginTop: '8px'
+                      }}
+                    />
                   ))}
                 </Box>
 
                 {/* Timestamp */}
-                <Text 
-                  size="xs" 
+                <Text
+                  size="xs"
                   c={isUser ? 'blue.1' : 'dimmed'}
                   ta={isUser ? 'right' : 'left'}
                   mt="xs"
                 >
-                  {new Date(message.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </Text>
               </Stack>
             </Paper>
 
             {/* Sender label */}
-            <Text 
-              size="xs" 
-              c="dimmed" 
+            <Text
+              size="xs"
+              c="dimmed"
               ta={isUser ? 'right' : 'left'}
               mt={4}
               px="sm"

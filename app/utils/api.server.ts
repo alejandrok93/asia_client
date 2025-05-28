@@ -26,8 +26,6 @@ export const createApiClient = (token?: string) => {
     }
   );
 
-  console.log('api client', client)
-
   return client;
 };
 

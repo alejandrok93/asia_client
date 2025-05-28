@@ -72,10 +72,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 export default function ChatConversation() {
   const { user, conversation, conversations } = useLoaderData<typeof loader>();
-  console.log('conversations', conversations);
-  console.log('conversation ', conversation)
   const params = useParams();
   const chatId = params.id;
+
+  // Extract messages from the included array
+  const messages = conversation?.included?.filter((item: any) => item.type === 'message').map((msg: any) => ({
+    id: msg.id,
+    role: msg.attributes.role,
+    content: msg.attributes.content,
+    timestamp: new Date(msg.attributes.created_at)
+  })) || [];
+  console.log('messages', messages)
 
   return (
     <Flex h="100vh" bg="gray.1">
@@ -103,7 +110,7 @@ export default function ChatConversation() {
         <ChatContainer
           chatId={chatId}
           user={user}
-          initialMessages={conversation?.relationships?.messages?.data || []}
+          initialMessages={messages}
         />
       </Box>
     </Flex>

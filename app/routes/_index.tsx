@@ -73,8 +73,6 @@ export default function Index() {
     fetcher.submit(formData, { method: "post" });
   };
 
-  console.log('conversations', conversations)
-
   return (
     <Flex h="100vh" bg="gray.1">
       <Sidebar
@@ -85,7 +83,7 @@ export default function Index() {
           // Navigate to the chat page when selecting a chat
           window.location.href = `/chat/${chatId}`;
         }}
-        conversations={conversations.map(conv => ({
+        conversations={(conversations ?? []).map(conv => ({
           id: String(conv.id),
           title: conv.attributes.title,
           date: new Date(conv.attributes.created_at)

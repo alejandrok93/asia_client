@@ -5,9 +5,7 @@ import type { Conversation } from '~/types';
 export async function getConversations(token: string): Promise<Conversation[]> {
   try {
     console.log('getConversations()')
-    console.log('token', token)
     const api = createApiClient(token);
-    console.log(api)
     const response = await api.get('/conversations');
     return response.data.data;
   } catch (error) {
@@ -20,9 +18,7 @@ export async function getConversation(token: string, id: string | number): Promi
     const formattedId = Number(id);
     const api = createApiClient(token);
     const response = await api.get(`/conversations/${formattedId}`);
-    console.log("getConversation()")
-    console.log(response.data.data)
-    return response.data.data;
+    return response.data;
   } catch (error) {
     handleApiError(error);
   }
@@ -70,9 +66,6 @@ export async function sendMessage(
   message: string
 ): Promise<void> {
   try {
-    console.log('token', token)
-    console.log('sendMessage()')
-    console.log('conversationId', conversationId)
     const api = createApiClient(token);
     await api.post(`/conversations/${conversationId}/messages`, { message });
   } catch (error) {

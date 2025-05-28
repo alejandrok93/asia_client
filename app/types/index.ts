@@ -49,11 +49,34 @@ export interface Conversation {
     messages: {
       data: Array<{
         id: string;
-        content: string;
         type: string;
       }> | [];
     };
   };
+}
+
+// JSON:API response format for single conversation with included data
+export interface ConversationResponse {
+  data: Conversation;
+  included?: Array<{
+    id: string;
+    type: string;
+    attributes: {
+      id: number;
+      role: string;
+      content: string;
+      created_at: string;
+      updated_at: string;
+    };
+    relationships?: {
+      conversation: {
+        data: {
+          id: string;
+          type: string;
+        }
+      }
+    };
+  }>;
 }
 
 export interface Message {
